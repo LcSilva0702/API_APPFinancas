@@ -1,930 +1,844 @@
-![](https://i.imgur.com/xG74tOh.png)
-
 # Desafio Módulo 3 - Backend
 
 Seu papel é construir uma RESTful API que permita:
 
--   Cadastrar Usuário
--   Fazer Login
--   Detalhar Perfil do Usuário Logado
--   Editar Perfil do Usuário Logado
--   Listar categorias
--   Detalhar categoria
--   Cadastrar categoria
--   Editar categoria
--   Remover categoria
--   Listar transações
--   Detalhar transação
--   Cadastrar transação
--   Editar transação
--   Remover transação
--   Obter extrato de transações
--   Filtrar transações por categoria
+1. Cadastrar Usuário
+2. Fazer Login
+3. Detalhar Perfil do Usuário Logado
+4. Editar Perfil do Usuário Logado
+5. Listar categorias
+6. Detalhar categoria
+7. Cadastrar categoria
+8. Editar categoria
+9. Remover categoria
+10. Listar transações
+11. Detalhar transação
+12. Cadastrar transação
+13. Editar transação
+14. Remover transação
+15. Obter extrato de transações
+16. Filtrar transações por categoria
 
 **Importante: Lembre-se sempre que cada usuário só pode ver e manipular seus próprios dados e suas próprias transações. Não atender a este pré-requisito é uma falha de segurança gravíssima!**
 
-**Importante 2: O diretório ".github" e seu conteúdo não podem ser alterados e muito menos excluídos**
+**Importante 2: O diretório ".github" e seu conteúdo não podem ser alterados e muito menos excluídos.**
 
-**Importante 3: Sempre que a validação de uma requisição falhar, responda com código de erro e mensagem adequada à situação, ok?**
+**Importante 3: Sempre que a validação de uma requisição falhar, responda com código de erro e mensagem adequada à situação, ok?
 
-**Exemplo:**
+## Banco de dados
 
-```javascript
-// Quando é informado um id de transação que não existe:
-// HTTP Status 404
-{
-    "mensagem": "Transação não encontrada!"
-}
-```
+Você precisa criar um Banco de Dados PostgreSQL chamado dindin contendo as seguintes tabelas e colunas:
 
-## **Banco de dados**
+### Tabela "usuarios"
+- id
+- nome
+- email (campo único)
+- senha
 
-Você precisa criar um Banco de Dados PostgreSQL chamado `dindin` contendo as seguintes tabelas e colunas:  
-**ATENÇÃO! Os nomes das tabelas e das colunas a serem criados devem seguir exatamente os nomes listados abaixo.**
+### Tabela "categorias"
+- id
+- usuario_id
+- descricao
 
--   usuarios
-    -   id
-    -   nome
-    -   email (campo único)
-    -   senha
--   categorias
-    -   id
-    -   usuario_id
-    -   descricao
--   transacoes
-    -   id
-    -   descricao
-    -   valor
-    -   data
-    -   categoria_id
-    -   usuario_id
-    -   tipo
+### Tabela "transacoes"
+- id
+- descricao
+- valor
+- data
+- categoria_id
+- usuario_id
+- tipo
 
 **IMPORTANTE: Deverá ser criado no projeto o(s) arquivo(s) SQL que deverá ser o script que cria as tabelas corretamente.**
 
-## **Requisitos obrigatórios**
+## Requisitos obrigatórios
 
--   A API a ser criada deverá acessar o banco de dados a ser criado "dindin" para persistir e manipular os dados de usuários, categorias e transações utilizados pela aplicação.
--   O campo `id` das tabelas no banco de dados deve ser auto incremento, chave primária e não deve permitir edição uma vez criado.
--   Seu código deverá estar organizado, delimitando as responsabilidades de cada arquivo adequadamente. Ou seja, é esperado que ele tenha, no mínimo:
-    -   Um arquivo index.js
-    -   Um arquivo conexao.js
-    -   Um arquivo de rotas
-    -   Um pasta com controladores
--   Qualquer valor monetário deverá ser representado em centavos (Ex.: R$ 10,00 reais = 1000)
--   Evite códigos duplicados. Antes de copiar e colar, pense se não faz sentido esse pedaço de código estar centralizado numa função.
+A API a ser criada deverá acessar o banco de dados a ser criado "dindin" para persistir e manipular os dados de usuários, categorias e transações utilizados pela aplicação.
 
-## **Status Codes**
+O campo id das tabelas no banco de dados deve ser auto incremento, chave primária e não deve permitir edição uma vez criado.
 
-Abaixo, listamos os possíveis **_status codes_** esperados como resposta da API.
+Seu código deverá estar organizado, delimitando as responsabilidades de cada arquivo adequadamente. Ou seja, é esperado que ele tenha, no mínimo:
+- Um arquivo index.js
+- Um arquivo conexao.js
+- Um arquivo de rotas
+- Um pasta com controladores
 
-```javascript
-// 200 (OK) = requisição bem sucedida
-// 201 (Created) = requisição bem sucedida e algo foi criado
-// 204 (No Content) = requisição bem sucedida, sem conteúdo no corpo da resposta
-// 400 (Bad Request) = o servidor não entendeu a requisição pois está com uma sintaxe/formato inválido
-// 401 (Unauthorized) = o usuário não está autenticado (logado)
-// 403 (Forbidden) = o usuário não tem permissão de acessar o recurso solicitado
-// 404 (Not Found) = o servidor não pode encontrar o recurso solicitado
-```
+Qualquer valor monetário deverá ser representado em centavos (Ex.: R$ 10,00 reais = 1000).
 
-## **Endpoints**
+Evite códigos duplicados. Antes de copiar e colar, pense se não faz sentido esse pedaço de código estar centralizado numa função.
 
-### **Cadastrar usuário**
+## Status Codes
 
-#### `POST` `/usuario`
+Abaixo, listamos os possíveis status codes esperados como resposta da API:
 
-Essa é a rota que será utilizada para cadastrar um novo usuario no sistema.
+- 200 (OK) = requisição bem sucedida
+- 201 (Created) = requisição bem sucedida e algo foi criado
+- 204 (No Content) = requisição bem sucedida, sem conteúdo no corpo da resposta
+- 400 (Bad Request) = o servidor não entendeu a requisição pois está com uma sintaxe/formato inválido
+- 401 (Unauthorized) = o usuário não está autenticado (logado)
+- 403 (Forbidden) = o usuário não tem permissão de acessar o recurso solicitado
+- 404 (Not Found) = o servidor não pode encontrar o recurso solicitado
 
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
+## Endpoints
 
-    -   nome
-    -   email
-    -   senha
+### Cadastrar usuário
+**POST** /usuario
 
--   **Resposta**  
-    Em caso de **sucesso**, deveremos enviar no corpo (body) da resposta o conteúdo do usuário cadastrado, incluindo seu respectivo `id` e excluindo a senha criptografada.
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
+Essa é a rota que será utilizada para cadastrar um novo usuário no sistema.
 
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar os campos obrigatórios:
-        -   nome
-        -   email
-        -   senha
-    -   Validar se o e-mail informado já existe
-    -   Criptografar a senha antes de persistir no banco de dados
-    -   Cadastrar o usuário no banco de dados
+**Requisição**
+Sem parâmetros de rota ou de query.
+O corpo (body) deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
 
-#### **Exemplo de requisição**
+- nome
+- email
+- senha
 
-```javascript
-// POST /usuario
+**Resposta**
+Em caso de sucesso, deveremos enviar no corpo (body) da resposta o conteúdo do usuário cadastrado, incluindo seu respectivo id e excluindo a senha criptografada. Em caso de falha na validação, a resposta deverá possuir status code apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade mensagem que deverá possuir como valor um texto explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Validar os campos obrigatórios: nome, email, senha
+- Validar se o e-mail informado já existe
+- Criptografar a senha antes de persistir no banco de dados
+- Cadastrar o usuário no banco de dados
+
+**Exemplo de requisição**
+
+```json
+POST /usuario
 {
-    "nome": "José",
-    "email": "jose@email.com",
-    "senha": "123456"
+  "nome": "João da Silva",
+  "email": "joao.silva@email.com",
+  "senha": "123456"
 }
 ```
 
-#### **Exemplos de resposta**
+### Fazer Login
+**POST** /auth
 
-```javascript
-// HTTP Status 200 / 201 / 204
+Essa rota permite que um usuário registrado faça login no sistema.
+
+**Requisição**
+Sem parâmetros de rota ou de consulta.
+O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- email
+- senha
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter um token JWT (JSON Web Token) no corpo (body). Em caso de falha na autenticação, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o email do usuário existe no banco de dados.
+- Comparar a senha fornecida com a senha armazenada no banco de dados após a descriptografia.
+- Emitir um token JWT após a autenticação bem-sucedida.
+
+**Exemplo de requisição**
+
+```json
+POST /auth
 {
+  "email": "joao.silva@email.com",
+  "senha": "123456"
+}
+```
+
+### Detalhar Perfil do Usuário Logado
+**GET** /perfil
+
+Essa rota permite que um usuário autenticado obtenha detalhes de seu próprio perfil.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes do perfil do usuário logado, excluindo a senha. Em caso de falha na autenticação (token inválido ou expirado), a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence a um usuário registrado no sistema.
+
+**Exemplo de requisição**
+
+```http
+GET /perfil
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "nome": "João da Silva",
+  "email": "joao.silva@email.com"
+}
+```
+
+### Editar Perfil do Usuário Logado
+**PUT** /perfil
+
+Esta rota permite que um usuário autenticado edite suas informações de perfil.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- nome (opcional)
+- senha (opcional)
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter as informações atualizadas do perfil do usuário. Em caso de falha na autenticação (token inválido ou expirado), a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Permitir que o usuário atualize seu nome e/ou senha, se desejado.
+- Atualizar as informações no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+PUT /perfil
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+```json
+{
+  "nome": "Novo Nome de Usuário",
+  "senha": "novasenha456"
+}
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "nome": "Novo Nome de Usuário",
+  "email": "joao.silva@email.com"
+}
+```
+
+### Listar Categorias
+**GET** /categorias
+
+Esta rota permite que um usuário autenticado liste todas as categorias associadas à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter uma lista de categorias associadas ao usuário logado. Cada categoria deve conter seu ID e descrição. Em caso de falha na autenticação (token inválido ou expirado), a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Recuperar as categorias associadas ao usuário no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+GET /categorias
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+[
+  {
     "id": 1,
-    "nome": "José",
-    "email": "jose@email.com"
+    "descricao": "Alimentação"
+  },
+  {
+    "id": 2,
+    "descricao": "Transporte"
+  }
+]
+```
+
+### Detalhar Categoria
+**GET** /categorias/{id}
+
+Esta rota permite que um usuário autenticado obtenha detalhes de uma categoria específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da categoria desejada.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da categoria, incluindo seu ID e descrição. Em caso de falha na autenticação (token inválido ou expirado) ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a categoria pertence ao usuário logado.
+
+**Exemplo de requisição**
+
+```http
+GET /categorias/1
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "descricao": "Alimentação"
 }
 ```
 
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
+### Cadastrar Categoria
+**POST** /categorias
+
+Esta rota permite que um usuário autenticado cadastre uma nova categoria associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O corpo (body) da solicitação deve conter um objeto com a seguinte propriedade:
+
+- descricao
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da categoria recém-criada, incluindo seu ID e descrição. Em caso de falha na autenticação (token inválido ou expirado) ou validação da descrição da categoria, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar se a descrição da categoria foi fornecida.
+- Cadastrar a nova categoria no banco de dados associando-a ao usuário logado.
+
+**Exemplo de requisição**
+
+```json
+POST /categorias
+Authorization: Bearer seu-token-jwt-aqui
 {
-    "mensagem": "Já existe usuário cadastrado com o e-mail informado."
+  "descricao": "Lazer"
 }
 ```
 
-### **Login do usuário**
+**Exemplo de resposta de sucesso**
 
-#### `POST` `/login`
-
-Essa é a rota que permite o usuario cadastrado realizar o login no sistema.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
-
-    -   email
-    -   senha
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um objeto com a propriedade **token** que deverá possuir como valor o token de autenticação gerado e uma propriedade **usuario** que deverá possuir as informações do usuário autenticado, exceto a senha do usuário.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-
-    -   Validar os campos obrigatórios:
-        -   email
-        -   senha
-    -   Verificar se o e-mail existe
-    -   Validar e-mail e senha
-    -   Criar token de autenticação com id do usuário
-
-#### **Exemplo de requisição**
-
-```javascript
-// POST /login
+```json
 {
-    "email": "jose@email.com",
-    "senha": "123456"
+  "id": 3,
+  "descricao": "Lazer"
 }
 ```
 
-#### **Exemplos de resposta**
+### Editar Categoria
+**PUT** /categorias/{id}
 
-```javascript
-// HTTP Status 200 / 201 / 204
+Esta rota permite que um usuário autenticado edite uma categoria específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da categoria que deseja editar. O corpo (body) da solicitação deve conter um objeto com a seguinte propriedade:
+
+- descricao
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da categoria após a edição, incluindo seu ID e descrição atualizada. Em caso de falha na autenticação (token inválido ou expirado), validação da descrição da categoria ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar se a descrição da categoria foi fornecida.
+- Verificar se a categoria pertence ao usuário logado.
+- Atualizar a descrição da categoria no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+PUT /categorias/3
+Authorization: Bearer seu-token-jwt-aqui
 {
-    "usuario": {
-        "id": 1,
-        "nome": "José",
-        "email": "jose@email.com"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNjIzMjQ5NjIxLCJleHAiOjE2MjMyNzg0MjF9.KLR9t7m_JQJfpuRv9_8H2-XJ92TSjKhGPxJXVfX6wBI"
+  "descricao": "Entretenimento"
 }
 ```
 
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
+**Exemplo de resposta de sucesso**
+
+```json
 {
-    "mensagem": "Usuário e/ou senha inválido(s)."
+  "id": 3,
+  "descricao": "Entretenimento"
 }
 ```
 
----
+### Remover Categoria
+**DELETE** /categorias/{id}
 
-## **ATENÇÃO**: Todas as funcionalidades (endpoints) a seguir, a partir desse ponto, deverão exigir o token de autenticação do usuário logado, recebendo no header com o formato Bearer Token. Portanto, em cada funcionalidade será necessário validar o token informado.
+Esta rota permite que um usuário autenticado remova uma categoria específica associada à sua conta.
 
----
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da categoria que deseja remover.
 
-### **Validações do token**
+**Resposta**
+Em caso de sucesso, a resposta deve ter o status code 204 (No Content) indicando que a categoria foi removida com sucesso. Em caso de falha na autenticação (token inválido ou expirado) ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
 
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar se o token foi enviado no header da requisição (Bearer Token)
-    -   Verificar se o token é válido
-    -   Consultar usuário no banco de dados pelo id contido no token informado
+**REQUISITOS OBRIGATÓRIOS**
 
-### **Detalhar usuário**
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a categoria pertence ao usuário logado.
+- Remover a categoria do banco de dados.
 
-#### `GET` `/usuario`
+**Exemplo de requisição**
 
-Essa é a rota que será chamada quando o usuario quiser obter os dados do seu próprio perfil.  
-**Atenção!:** O usuário deverá ser identificado através do ID presente no token de autenticação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    Não deverá possuir conteúdo no corpo da requisição.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um objeto que representa o usuário encontrado, com todas as suas propriedades (exceto a senha), conforme exemplo abaixo, acompanhado de **_status code_** apropriado.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.  
-    **Dica:** neste endpoint podemos fazer uso do status code 401 (Unauthorized).
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /usuario
-// Sem conteúdo no corpo (body) da requisição
+```http
+DELETE /categorias/3
+Authorization: Bearer seu-token-jwt-aqui
 ```
 
-#### **Exemplos de resposta**
+**Exemplo de resposta de sucesso**
 
-```javascript
-// HTTP Status 200 / 201 / 204
-{
+```http
+204 No Content
+```
+
+### Listar Transações
+**GET** /transacoes
+
+Esta rota permite que um usuário autenticado liste todas as transações associadas à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter uma lista de transações associadas ao usuário logado. Cada transação deve conter seu ID, descrição, valor, data, categoria e tipo. Em caso de falha na autenticação (token inválido ou expirado), a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Recuperar as transações associadas ao usuário no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+GET /transacoes
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+[
+  {
     "id": 1,
-    "nome": "José",
-    "email": "jose@email.com"
-}
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Para acessar este recurso um token de autenticação válido deve ser enviado."
-}
-```
-
-### **Atualizar usuário**
-
-#### `PUT` `/usuario`
-
-Essa é a rota que será chamada quando o usuário quiser realizar alterações no seu próprio usuário.  
-**Atenção!:** O usuário deverá ser identificado através do ID presente no token de autenticação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
-
-    -   nome
-    -   email
-    -   senha
-
--   **Resposta**  
-    Em caso de **sucesso**, não deveremos enviar conteúdo no corpo (body) da resposta.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar os campos obrigatórios:
-        -   nome
-        -   email
-        -   senha
-    -   Validar se o novo e-mail já existe no banco de dados para outro usuário
-        -   Caso já exista o novo e-mail fornecido para outro usuário no banco de dados, a alteração não deve ser permitida (o campo de email deve ser sempre único no banco de dados)
-    -   Criptografar a senha antes de salvar no banco de dados
-    -   Atualizar as informações do usuário no banco de dados
-
-#### **Exemplo de requisição**
-
-```javascript
-// PUT /usuario
-{
-    "nome": "José de Abreu",
-    "email": "jose_abreu@email.com",
-    "senha": "j4321"
-}
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-// Sem conteúdo no corpo (body) da resposta
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "O e-mail informado já está sendo utilizado por outro usuário."
-}
-```
-
-### **Listar categorias do usuário logado**
-
-#### `GET` `/categoria`
-
-Essa é a rota que será chamada quando o usuario logado quiser listar todas as suas categorias cadastradas.  
-**Lembre-se:** Deverão ser retornadas **apenas** categorias associadas ao usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    Não deverá possuir conteúdo no corpo (body) da requisição.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um array dos objetos (categorias) encontrados.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   O usuário deverá ser identificado através do ID presente no token de validação
-    -   O endpoint deverá responder com um array de todas as categorias associadas ao usuário. Caso não exista nenhuma categoria associada ao usuário deverá responder com array vazio.
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /categoria
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-;[
-    {
-        id: 1,
-        descricao: "Roupas",
-        usuario_id: 1,
-    },
-    {
-        id: 2,
-        descricao: "Mercado",
-        usuario_id: 1,
-    },
-]
-```
-
-```javascript
-// HTTP Status 200 / 201 / 204
-;[]
-```
-
-### **Detalhar uma categoria do usuário logado**
-
-#### `GET` `/categoria/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser obter uma das suas categorias cadastradas.  
-**Lembre-se:** Deverá ser retornada **apenas** categoria associada ao usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da categoria no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição não deverá possuir nenhum conteúdo.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um objeto que representa a categoria encontrada, com todas as suas propriedades, conforme exemplo abaixo, acompanhado de **_status code_** apropriado.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar se existe categoria para o id enviado como parâmetro na rota e se esta categoria pertence ao usuário logado.
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /categoria/2
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-{
+    "descricao": "Restaurante",
+    "valor": 2500,
+    "data": "2023-08-15",
+    "categoria": "Alimentação",
+    "tipo": "Despesa"
+  },
+  {
     "id": 2,
-    "descricao": "Mercado"
-    "usuario_id": 1,
+    "descricao": "Salário",
+    "valor": 50000,
+    "data": "2023-08-30",
+    "categoria": "Trabalho",
+    "tipo": "Receita"
+  }
+]
+```
+
+### Detalhar Transação
+**GET** /transacoes/{id}
+
+Esta rota permite que um usuário autenticado obtenha detalhes de uma transação específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da transação desejada.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da transação, incluindo seu ID, descrição, valor, data, categoria e tipo. Em caso de falha na autenticação (token inválido ou expirado) ou se a transação não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a transação pertence ao usuário logado.
+
+**Exemplo de requisição**
+
+```http
+GET /transacoes/1
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "descricao": "Restaurante",
+  "valor": 2500,
+  "data": "2023-08-15",
+  "categoria": "Alimentação",
+  "tipo": "Despesa"
 }
 ```
 
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
+### Cadastrar Transação
+**POST** /transacoes
+
+Esta rota permite que um usuário autenticado cadastre uma nova transação associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- descricao
+- valor
+- data
+- categoria_id
+- tipo
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter o conteúdo da transação cadastrada, incluindo seu ID. Em caso de falha na autenticação (token inválido ou expirado), validação dos campos da transação ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar os campos obrigatórios: descricao, valor, data, categoria_id e tipo.
+- Verificar se a categoria pertence ao usuário logado.
+- Cadastrar a transação no banco de dados.
+
+**Exemplo de requisição**
+
+```json
+POST /transacoes
+Authorization: Bearer seu-token-jwt-aqui
 {
-    "mensagem": "Categoria não encontrada."
+  "descricao": "Restaurante",
+  "valor": 2500,
+  "data": "2023-08-15",
+  "categoria_id": 1,
+  "tipo": "Despesa"
 }
 ```
 
-### **Cadastrar categoria para o usuário logado**
+**Exemplo de resposta de sucesso**
 
-#### `POST` `/categoria`
-
-Essa é a rota que será utilizada para cadastrar uma categoria associada ao usuário logado.  
-**Lembre-se:** Deverá ser possível cadastrar **apenas** categorias associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) da requisição deverá possuir um objeto com a seguinte propriedade (respeitando este nome):
-
-    -   descricao
-
--   **Resposta**
-    Em caso de **sucesso**, deveremos enviar, no corpo (body) da resposta, as informações da categoria cadastrada, incluindo seu respectivo `id`.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar o campo obrigatório:
-        -   descricao
-    -   Cadastrar a categoria associada ao usuário logado.
-
-#### **Exemplo de requisição**
-
-```javascript
-// POST /categoria
+```json
 {
-    "descricao": "Mercado"
+  "id": 1,
+  "descricao": "Restaurante",
+  "valor": 2500,
+  "data": "2023-08-15",
+  "categoria": "Alimentação",
+  "tipo": "Despesa"
 }
 ```
 
-#### **Exemplos de resposta**
+### Editar Transação
+**PUT** /transacoes/{id}
 
-```javascript
-// HTTP Status 200 / 201 / 204
+Esta rota permite que um usuário autenticado edite uma transação específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da transação que deseja editar. O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- descricao
+- valor
+- data
+- categoria_id
+- tipo
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da transação após a edição, incluindo seu ID. Em caso de falha na autenticação (token inválido ou expirado), validação dos campos da transação ou se a transação não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar os campos obrigatórios: descricao, valor, data, categoria_id e tipo.
+- Verificar se a transação pertence ao usuário logado.
+- Atualizar os campos da transação no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+PUT /transacoes/1
+Authorization: Bearer seu-token-jwt-aqui
 {
+  "descricao": "Restaurante Italiano",
+  "valor": 3000,
+  "data": "2023-08-20",
+  "categoria_id": 1,
+  "tipo": "Despesa"
+}
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "descricao": "Restaurante Italiano",
+  "valor": 3000,
+  "data": "2023-08-20",
+  "categoria": "Alimentação",
+  "tipo": "Despesa"
+}
+```
+
+### Remover Transação
+**DELETE** /transacoes/{id}
+
+Esta rota permite que um usuário autenticado remova uma transação específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da transação que deseja remover.
+
+**Resposta**
+Em caso de sucesso, a resposta deve ter o status code 204 (No Content) indicando que a transação foi removida com sucesso. Em caso de falha na autenticação (token inválido ou expirado) ou se a transação não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a transação pertence ao usuário logado.
+- Remover a transação do banco de dados.
+
+**Exemplo de requisição**
+
+```http
+DELETE /transacoes/1
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```http
+204 No Content
+```
+
+### Cadastrar Transação
+**POST** /transacoes
+
+Esta rota permite que um usuário autenticado cadastre uma nova transação associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- descricao
+- valor
+- data
+- categoria_id
+- tipo
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter o conteúdo da transação cadastrada, incluindo seu ID. Em caso de falha na autenticação (token inválido ou expirado), validação dos campos da transação ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar os campos obrigatórios: descricao, valor, data, categoria_id e tipo.
+- Verificar se a categoria pertence ao usuário logado.
+- Cadastrar a transação no banco de dados.
+
+**Exemplo de requisição**
+
+```json
+POST /transacoes
+Authorization: Bearer seu-token-jwt-aqui
+{
+  "descricao": "Restaurante",
+  "valor": 2500,
+  "data": "2023-08-15",
+  "categoria_id": 1,
+  "tipo": "Despesa"
+}
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "descricao": "Restaurante",
+  "valor": 2500,
+  "data": "2023-08-15",
+  "categoria": "Alimentação",
+  "tipo": "Despesa"
+}
+```
+
+### Editar Transação
+**PUT** /transacoes/{id}
+
+Esta rota permite que um usuário autenticado edite uma transação específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da transação que deseja editar. O corpo (body) da solicitação deve conter um objeto com as seguintes propriedades:
+
+- descricao
+- valor
+- data
+- categoria_id
+- tipo
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter os detalhes da transação após a edição, incluindo seu ID. Em caso de falha na autenticação (token inválido ou expirado), validação dos campos da transação ou se a transação não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar os campos obrigatórios: descricao, valor, data, categoria_id e tipo.
+- Verificar se a transação pertence ao usuário logado.
+- Atualizar os campos da transação no banco de dados.
+
+**Exemplo de requisição**
+
+```http
+PUT /transacoes/1
+Authorization: Bearer seu-token-jwt-aqui
+{
+  "descricao": "Restaurante Italiano",
+  "valor": 3000,
+  "data": "2023-08-20",
+  "categoria_id": 1,
+  "tipo": "Despesa"
+}
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+{
+  "id": 1,
+  "descricao": "Restaurante Italiano",
+  "valor": 3000,
+  "data": "2023-08-20",
+  "categoria": "Alimentação",
+  "tipo": "Despesa"
+}
+```
+
+### Remover Transação
+**DELETE** /transacoes/{id}
+
+Esta rota permite que um usuário autenticado remova uma transação específica associada à sua conta.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da transação que deseja remover.
+
+**Resposta**
+Em caso de sucesso, a resposta deve ter o status code 204 (No Content) indicando que a transação foi removida com sucesso. Em caso de falha na autenticação (token inválido ou expirado) ou se a transação não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a transação pertence ao usuário logado.
+- Remover a transação do banco de dados.
+
+**Exemplo de requisição**
+
+```http
+DELETE /transacoes/1
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```http
+204 No Content
+```
+
+### Obter Extrato de Transações
+**GET** /extrato
+
+Esta rota permite que um usuário autenticado obtenha um extrato de suas transações com base em um período especificado.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. A rota aceita parâmetros de consulta (query parameters) para filtrar o extrato por data inicial e data final. Os parâmetros aceitos são:
+
+- `data_inicial` (opcional): Data inicial do período desejado no formato "AAAA-MM-DD".
+- `data_final` (opcional): Data final do período desejado no formato "AAAA-MM-DD".
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter uma lista de transações que se enquadram no período especificado, incluindo detalhes de cada transação. Em caso de falha na autenticação (token inválido ou expirado) ou se as datas informadas forem inválidas, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Validar as datas fornecidas (se fornecidas) para garantir que estão em um formato válido e correspondem a um período apropriado.
+- Recuperar as transações que correspondem ao período informado.
+
+**Exemplo de requisição**
+
+```http
+GET /extrato?data_inicial=2023-08-01&data_final=2023-08-31
+Authorization: Bearer seu-token-jwt-aqui
+```
+
+**Exemplo de resposta de sucesso**
+
+```json
+[
+  {
+    "id": 1,
+    "descricao": "Restaurante",
+    "valor": 2500,
+    "data": "2023-08-15",
+    "categoria": "Alimentação",
+    "tipo": "Despesa"
+  },
+  {
     "id": 2,
-    "descricao": "Mercado"
-    "usuario_id": 1,
-}
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "A descrição da categoria deve ser informada."
-}
-```
-
-### **Atualizar categoria do usuário logado**
-
-#### `PUT` `/categoria/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser atualizar uma das suas categorias cadastradas.  
-**Lembre-se:** Deverá ser possível atualizar **apenas** categorias associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da categoria no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição deverá possuir um objeto com a seguinte propriedade (respeitando este nome):
-
-    -   descricao
-
--   **Resposta**  
-    Em caso de **sucesso**, não deveremos enviar conteúdo no corpo (body) da resposta.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar se existe categoria para o id enviado como parâmetro na rota e se esta categoria pertence ao usuário logado.
-    -   Validar os campos obrigatórios:
-        -   descricao
-    -   Atualizar a categoria no banco de dados
-
-#### **Exemplo de requisição**
-
-```javascript
-// PUT /categoria/2
-{
-    "descricao": "Presentes"
-}
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-// Sem conteúdo no corpo (body) da resposta
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "A descrição da categoria deve ser informada."
-}
-```
-
-### **Excluir categoria do usuário logado**
-
-#### `DELETE` `/categoria/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser excluir uma das suas categorias cadastradas.  
-**Lembre-se:** Deverá ser possível excluir **apenas** categorias associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da categoria no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição não deverá possuir nenhum conteúdo.
-
--   **Resposta**  
-    Em caso de **sucesso**, não deveremos enviar conteúdo no corpo (body) da resposta.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**:
-    -   Validar se existe categoria para o id enviado como parâmetro na rota e se esta categoria pertence ao usuário logado.
-    -   Validar se existe alguma transação associada a esta categoria. Caso exista, não deverá ser permitido a exclusão
-    -   Excluir a categoria no banco de dados.
-
-#### **Exemplo de requisição**
-
-```javascript
-// DELETE /categoria/2
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-// Sem conteúdo no corpo (body) da resposta
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Categoria não encontrada."
-}
-```
-
-### **Listar transações do usuário logado**
-
-#### `GET` `/transacao`
-
-Essa é a rota que será chamada quando o usuario logado quiser listar todas as suas transações cadastradas.  
-**Lembre-se:** Deverão ser retornadas **apenas** transações associadas ao usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    Não deverá possuir conteúdo no corpo (body) da requisição.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um array dos objetos (transações) encontrados.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   O usuário deverá ser identificado através do ID presente no token de validação
-    -   O endpoint deverá responder com um array de todas as transações associadas ao usuário. Caso não exista nenhuma transação associada ao usuário deverá responder com array vazio.
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /transacao
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-;[
-    {
-        id: 1,
-        tipo: "saida",
-        descricao: "Sapato amarelo",
-        valor: 15800,
-        data: "2022-03-23T15:35:00.000Z",
-        usuario_id: 5,
-        categoria_id: 4,
-        categoria_nome: "Roupas",
-    },
-    {
-        id: 3,
-        tipo: "entrada",
-        descricao: "Salário",
-        valor: 300000,
-        data: "2022-03-24T15:30:00.000Z",
-        usuario_id: 5,
-        categoria_id: 6,
-        categoria_nome: "Salários",
-    },
+    "descricao": "Salário",
+    "valor": 500000,
+    "data": "2023-08-25",
+    "categoria": "Salário",
+    "tipo": "Receita"
+  }
 ]
 ```
 
-```javascript
-// HTTP Status 200 / 201 / 204
-;[]
+### Filtrar Transações por Categoria
+**GET** /extrato/categoria/{id}
+
+Esta rota permite que um usuário autenticado filtre suas transações por categoria.
+
+**Requisição**
+A autenticação do usuário é realizada através do token JWT no cabeçalho (header) da requisição. O parâmetro `id` na rota deve ser substituído pelo ID da categoria pela qual deseja filtrar as transações.
+
+**Resposta**
+Em caso de sucesso, a resposta deve conter uma lista de transações associadas à categoria especificada, incluindo detalhes de cada transação. Em caso de falha na autenticação (token inválido ou expirado) ou se a categoria não pertencer ao usuário logado, a resposta deve ter um status code apropriado e um corpo (body) com uma mensagem explicando o motivo da falha.
+
+**REQUISITOS OBRIGATÓRIOS**
+
+- Verificar se o token JWT é válido e pertence ao usuário logado.
+- Verificar se a categoria pertence ao usuário logado.
+- Recuperar as transações associadas à categoria informada.
+
+**Exemplo de requisição**
+
+```http
+GET /extrato/categoria/1
+Authorization: Bearer seu-token-jwt-aqui
 ```
 
-### **Detalhar uma transação do usuário logado**
+**Exemplo de resposta de sucesso**
 
-#### `GET` `/transacao/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser obter uma das suas transações cadastradas.  
-**Lembre-se:** Deverá ser retornado **apenas** transação associada ao usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da transação no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição não deverá possuir nenhum conteúdo.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um objeto que representa a transação encontrada, com todas as suas propriedades, conforme exemplo abaixo, acompanhado de **_status code_** apropriado.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar se existe transação para o id enviado como parâmetro na rota e se esta transação pertence ao usuário logado.
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /transacao/2
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-{
+```json
+[
+  {
+    "id": 1,
+    "descricao": "Restaurante",
+    "valor": 2500,
+    "data": "2023-08-15",
+    "categoria": "Alimentação",
+    "tipo": "Despesa"
+  },
+  {
     "id": 3,
-    "tipo": "entrada",
-    "descricao": "Salário",
-    "valor": 300000,
-    "data": "2022-03-24T15:30:00.000Z",
-    "usuario_id": 5,
-    "categoria_id": 6,
-    "categoria_nome": "Salários",
-}
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Transação não encontrada."
-}
-```
-
-### **Cadastrar transação para o usuário logado**
-
-#### `POST` `/transacao`
-
-Essa é a rota que será utilizada para cadastrar uma transação associada ao usuário logado.  
-**Lembre-se:** Deverá ser possível cadastrar **apenas** transações associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) da requisição deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
-
-    -   descricao
-    -   valor
-    -   data
-    -   categoria_id
-    -   tipo (campo que será informado se a transação corresponde a uma saída ou entrada de valores)
-
--   **Resposta**
-    Em caso de **sucesso**, deveremos enviar, no corpo (body) da resposta, as informações da transação cadastrada, incluindo seu respectivo `id`.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar os campos obrigatórios:
-        -   descricao
-        -   valor
-        -   data
-        -   categoria_id
-        -   tipo
-    -   Validar se existe categoria para o id enviado no corpo (body) da requisição e se esta categoria pertence ao usuário logado.
-    -   Validar se o tipo enviado no corpo (body) da requisição corresponde a palavra `entrada` ou `saida`, exatamente como descrito.
-    -   Cadastrar a transação associada ao usuário logado.
-
-#### **Exemplo de requisição**
-
-```javascript
-// POST /transacao
-{
-    "tipo": "entrada",
-    "descricao": "Salário",
-    "valor": 300000,
-    "data": "2022-03-24T15:30:00.000Z",
-    "categoria_id": 6
-}
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-{
-    "id": 3,
-    "tipo": "entrada",
-    "descricao": "Salário",
-    "valor": 300000,
-    "data": "2022-03-24T15:30:00.000Z",
-    "usuario_id": 5,
-    "categoria_id": 6,
-    "categoria_nome": "Salários",
-}
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Todos os campos obrigatórios devem ser informados."
-}
-```
-
-### **Atualizar transação do usuário logado**
-
-#### `PUT` `/transacao/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser atualizar uma das suas transações cadastradas.  
-**Lembre-se:** Deverá ser possível atualizar **apenas** transações associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da transação no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição deverá possuir um objeto com as seguintes propriedades (respeitando estes nomes):
-
-    -   descricao
-    -   valor
-    -   data
-    -   categoria_id
-    -   tipo (campo que será informado se a transação corresponde a uma saída ou entrada de valores)
-
--   **Resposta**  
-    Em caso de **sucesso**, não deveremos enviar conteúdo no corpo (body) da resposta.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   Validar se existe transação para o id enviado como parâmetro na rota e se esta transação pertence ao usuário logado.
-    -   Validar os campos obrigatórios:
-        -   descricao
-        -   valor
-        -   data
-        -   categoria_id
-        -   tipo
-    -   Validar se existe categoria para o id enviado no corpo (body) da requisição e se esta categoria pertence ao usuário logado.
-    -   Validar se o tipo enviado no corpo (body) da requisição corresponde a palavra `entrada` ou `saida`, exatamente como descrito.
-    -   Atualizar a transação no banco de dados
-
-#### **Exemplo de requisição**
-
-```javascript
-// PUT /transacao/2
-{
-	"descricao": "Sapato amarelo",
-	"valor": 15800,
-	"data": "2022-03-23 12:35:00",
-	"categoria_id": 4,
-	"tipo": "saida"
-}
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-// Sem conteúdo no corpo (body) da resposta
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Todos os campos obrigatórios devem ser informados."
-}
-```
-
-### **Excluir transação do usuário logado**
-
-#### `DELETE` `/transacao/:id`
-
-Essa é a rota que será chamada quando o usuario logado quiser excluir uma das suas transações cadastradas.  
-**Lembre-se:** Deverá ser possível excluir **apenas** transações associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Deverá ser enviado o ID da transação no parâmetro de rota do endpoint.  
-    O corpo (body) da requisição não deverá possuir nenhum conteúdo.
-
--   **Resposta**  
-    Em caso de **sucesso**, não deveremos enviar conteúdo no corpo (body) da resposta.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**:
-    -   Validar se existe transação para o id enviado como parâmetro na rota e se esta transação pertence ao usuário logado.
-    -   Excluir a transação no banco de dados.
-
-#### **Exemplo de requisição**
-
-```javascript
-// DELETE /transacao/2
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-// Sem conteúdo no corpo (body) da resposta
-```
-
-```javascript
-// HTTP Status 400 / 401 / 403 / 404
-{
-    "mensagem": "Transação não encontrada."
-}
-```
-
-### **Obter extrato de transações**
-
-#### `GET` `/transacao/extrato`
-
-Essa é a rota que será chamada quando o usuario logado quiser obter o extrato de todas as suas transações cadastradas.
-**Lembre-se:** Deverá ser possível consultar **apenas** transações associadas ao próprio usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Sem parâmetros de rota ou de query.  
-    O corpo (body) da requisição não deverá possuir nenhum conteúdo.
-
--   **Resposta**  
-    Em caso de **sucesso**, deveremos enviar no corpo (body) da resposta um objeto contendo a soma de todas as transações do tipo `entrada` e a soma de todas as transações do tipo `saida`.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**:
-    -   Em caso de não existir transações do tipo `entrada` cadastradas para o usuário logado, o valor retornado no corpo (body) da resposta deverá ser 0.
-    -   Em caso de não existir transações do tipo `saida` cadastradas para o usuário logado, o valor retornado no corpo (body) da resposta deverá ser 0.
-
-**Importante: A criação desta rota, no arquivo `rotas.js`, deverá acontecer antes da criação da rota de detalhamento de uma transação (`GET /transacao/:id`), caso contrário, esta rota nunca será possível ser acessada.**
-
-#### **Exemplo de requisição**
-
-```javascript
-// DELETE /transacao/extrato
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-{
-	"entrada": 300000,
-	"saida": 15800
-}
-```
-
----
-
-### **Filtrar transações por categoria**
-
-Na funcionalidade de listagem de transações do usuário logado (**GET /transacao**), deveremos incluir um parâmetro do tipo query **filtro** para que seja possível consultar apenas transações das categorias informadas.  
-**Lembre-se:** Deverão ser retornadas **apenas** transações associadas ao usuário logado, que deverá ser identificado através do ID presente no token de validação.
-
--   **Requisição**  
-    Parâmetro opcional do tipo query **filtro**.
-    Não deverá possuir conteúdo no corpo (body) da requisição.
-
--   **Resposta**  
-    Em caso de **sucesso**, o corpo (body) da resposta deverá possuir um array dos objetos (transações) encontradas.  
-    Em caso de **falha na validação**, a resposta deverá possuir **_status code_** apropriado, e em seu corpo (body) deverá possuir um objeto com uma propriedade **mensagem** que deverá possuir como valor um texto explicando o motivo da falha.
-
--   **REQUISITOS OBRIGATÓRIOS**
-    -   O usuário deverá ser identificado através do ID presente no token de validação
-    -   O parâmetro opcional do tipo query **filtro**, quando enviado, deverá ser sempre um array contendo a descrição de uma ou mais categorias.
-    -   O endpoint deverá responder com um array de todas as transações associadas ao usuário que sejam da categorias passadas no parâmetro query. Caso não exista nenhuma transação associada ao usuário deverá responder com array vazio.
-
-#### **Exemplo de requisição**
-
-```javascript
-// GET /produtos?filtro[]=roupas&filtro[]=salários
-// Sem conteúdo no corpo (body) da requisição
-```
-
-#### **Exemplos de resposta**
-
-```javascript
-// HTTP Status 200 / 201 / 204
-;[
-    {
-        id: 1,
-        tipo: "saida",
-        descricao: "Sapato amarelo",
-        valor: 15800,
-        data: "2022-03-23T15:35:00.000Z",
-        usuario_id: 5,
-        categoria_id: 4,
-        categoria_nome: "Roupas",
-    },
-    {
-        id: 3,
-        tipo: "entrada",
-        descricao: "Salário",
-        valor: 300000,
-        data: "2022-03-24T15:30:00.000Z",
-        usuario_id: 5,
-        categoria_id: 6,
-        categoria_nome: "Salários",
-    },
+    "descricao": "Lanche",
+    "valor": 1500,
+    "data": "2023-08-18",
+    "categoria": "Alimentação",
+    "tipo": "Despesa"
+  }
 ]
 ```
 
-```javascript
-// HTTP Status 200 / 201 / 204
-;[]
-```
-
----
-
-## **Aulas úteis:**
-
--   [CRUD SQL](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/4ee4bbf0-4299-441d-ae7a-295951876c9e)
--   [Modelagem de Dados](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/bb94b971-44c5-44da-907f-1f69a5cf26c0)
--   [Conexão NodeJs com PostgreSQL](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/c640e794-e38b-48ab-9bbe-49fd24c640b9)
--   [Autenticação e Criptografia](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/14464b78-b9d4-49ca-a7ce-336c82ebed7d)
--   [Revisão Autenticação e Criptografia](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/d784dadd-7113-498a-8a81-8c5a055bb219)
--   [Revisão de Banco de Dados](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/ebd30c95-8cfe-41b8-b996-ab1b689e9a65)
--   [Revisão do Módulo 3](https://aulas.cubos.academy/turma/6180ea7c-53ac-4270-bd46-d772873added/aulas/270b9d6c-2ff2-4317-9530-6a6935674e25)
----
-
-**LEMBRE-SE**: Feito é melhor que perfeito!!!
-
-###### tags: `back-end` `módulo 3` `nodeJS` `PostgreSQL` `API REST` `desafio`
